@@ -1,0 +1,118 @@
+import java.util.ArrayList;
+import java.util.List;
+
+record Point(double x, double y) {
+
+    public double getX() {
+        return x;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    static Point ZERO = new Point(0, 0);
+
+    public Point add(final Point other) {
+        return new Point(x + other.getX(), y + other.getY());
+    }
+
+    public Point subtract(final Point other) {
+        return new Point(x - other.getX(), y - other.getY());
+    }
+
+    public Point multiply(final double factor) {
+        return new Point(x * factor, y * factor);
+    }
+
+    public Point divide(final double divisor) {
+        return new Point(x / divisor, y / divisor);
+    }
+
+    public Point rotate(double angle) {
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        double newX = x * cos - y * sin;
+        double newY = x * sin + y * cos;
+        return new Point(newX, newY);
+    }
+
+    static double dotProduct(final Point a, final Point b) {
+        return a.getX() * b.getX() + a.getY() * b.getY();
+    }
+
+    static double distance(final Point a, final Point b) {
+        double dx = a.getX() - b.getX();
+        double dy = a.getY() - b.getY();
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    private void validatePoints(List<Point> points) {
+        if (points.size() < 2) {
+            throw new IllegalArgumentException("At least two points are required");
+        }
+    }
+
+    private void validateCoefficient(double coefficient) {
+        if (coefficient == 0) {
+            throw new IllegalArgumentException("Coefficient cannot be zero");
+        }
+    }
+}
+
+abstract class Shape {
+    public abstract Point center();
+
+    public abstract double perimeter();
+
+    public abstract double area();
+
+    public abstract void translate(final Point newCenter);
+
+    public abstract void rotate(final double angle);
+
+    public abstract void scale(final double coefficient);
+}
+
+class Ellipse extends Shape {
+
+    protected Point focus1;
+    protected Point focus2;
+    protected Point barycenter;
+    protected double perifocalDistance;
+
+    public Ellipse(final Point A, final Point B, final double distance) {
+        focus1 = A;
+        focus2 = B;
+        perifocalDistance = distance;
+        barycenter = A.add(B).divide(2.0);
+    }
+
+    public List<Point> focuses() {
+        List<Point> foci = new ArrayList<>();
+        foci.add(focus1);
+        foci.add(focus2);
+        return foci;
+    }
+
+    public double focalDistance() {
+        return Point.distance(focus1, barycenter);
+    }
+
+    public double majorSemiAxis() {
+        return focalDistance() + perifocalDistance;
+    }
+
+    public double minorSemiAxis() {
+        double dst = focalDistance();
+        double mjrAxis = majorSemiAxis();
+        return Math.sqrt(Math.pow(mjrAxis, 2) - Math.pow(dst, 2));
+    }
+
+    public double perimeter() {
+        double a = majorSemiAxis();
+        double b = minorSemiAxis();
+        return 4 * (Math.PI * a * b + Math.pow((a - b), 2)) / (a + b);
+    }
+
+}
